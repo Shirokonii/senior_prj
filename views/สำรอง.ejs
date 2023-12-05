@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+  <!-- 0. ส่วนแสดง Title ของ Web (start) -->
+  <title>ระบบสารสนเทศภูมิศาสตร์</title>
+  <!-- 0. ส่วนแสดง Title ของ Web (end) -->
+
+  <!-- 1. เรียกใช้ bootstrap สำหรับตกแต่งหน้า Web (start) -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+    integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <!-- 1. เรียกใช้ bootstrap สำหรับตกแต่งหน้า Web (end) -->
+
+  <!-- 2. เรียกใช้ jquery สำหรับใช้งาน คำสั่งเปิด-ปิด parnel ด้านซ้าย และการเรียกใช้ api และอ่านค่าจากไฟล์ด้วย ajax (start) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <!-- 2. เรียกใช้ jquery สำหรับใช้งาน คำสั่งเปิด-ปิด parnel ด้านซ้าย และการเรียกใช้ api และอ่านค่าจากไฟล์ด้วย ajax (start) -->
+
+  <!-- 3. เรียนใช้ leaflet สำหรับสร้างแผนที่ ส่วนหน้าตาแผนที่ (start)-->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js"></script>
+  <!-- 3. เรียนใช้ leaflet สำหรับสร้างแผนที่ ส่วนหน้าตาแผนที่ (end)-->
+
+  <!-- เครื่องมือสำหรับวาดบนแผนที่ (start) -->
+  <script src="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.14.2/dist/leaflet-geoman.min.js"></script>
+  <link rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@geoman-io/leaflet-geoman-free@2.14.2/dist/leaflet-geoman.min.css">
+  <!-- เครื่องมือสำหรับวาดบนแผนที่ (end) -->
+
+  <!-- เรียกใช้เครื่องมือ turf สำหรับใช้วิเคราะห์เชิงพื้นที่ (start) -->
+  <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+  <!-- เรียกใช้เครื่องมือ turf สำหรับใช้วิเคราะห์เชิงพื้นที่ (end) -->
+
+  <!-- 4. ใส่คุณสมบัติความสวยงามของ tag html (start) -->
+  <!-- การกำหนดรูปแบบการแสดงผลของ tag ต่างๆ ของ HTML ใน tag <style></style> เรียกว่าการเขียน css -->
+  <!-- โดยการเขียนใน <style></style> จะเป็นการกำหนดว่า HTML ที่มี tag class หรือ id ตามที่ระบุไว้ ต้องมีคุณลักษณะตามที่กำหนด เหมือนกันทั้งหน้า นอกจากนี้ คุณสมบัติเหล่านี้ ยังสามารถเขียนใน style = "" เองได้ เพื่อกำหนดคุณสมบัติเฉะาะของ tag นั้นๆ โดยเฉพาะ -->
+  <style>
+    /* ตัวอย่าง  */
+    /* html,body,col คือ tag  */
+    /* .mini-submenu,.collapsible คือ class */
+    /* #container,#sidebar คือ id */
+
+    html,
+    body,
+    #container {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      margin: 0 px;
+      padding: 0 px;
+    }
+
+    #sidebar {
+      display: block;
+      width: 20%;
+      height: 100%;
+      max-width: 100%;
+      float: left;
+      overflow: auto;
+      padding: 10 px;
+    }
+
+    #sidebar-hide-btn {
+      margin-top: -2px;
+    }
+
+    .mini-submenu {
+      top: 50%;
+      margin-left: 0px;
+      display: show;
+      background-color: white;
+      border: 0px solid rgba(0, 0, 0, 0.9);
+      border-radius: 4px;
+      padding: 9px;
+      position: absolute;
+      z-index: 900;
+      width: 30px;
+      box-shadow: 2px 2px 5px gray;
+    }
+
+    .mini-submenu:hover {
+      cursor: pointer;
+    }
+
+    #map {
+      width: auto;
+      height: 100%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .collapsible {
+      color: black;
+      cursor: pointer;
+      padding: 4px;
+      width: 100%;
+      border: 0px solid #ffffff;
+      text-align: left;
+      outline: none;
+      font-size: 16px;
+    }
+  </style>
+  <!-- 4. ใส่คุณสมบัติความสวยงามของ tag html (end) -->
+</head>
+
+<body>
+
+  <!-- 5. ส่วน container สำหรับช่วยจัดให้ content เต็มหน้าจอพอดี (start) -->
+  <div id="container">
+
+    <!-- 7. Layer Parnel ด้านซ้าย (start) -->
+    <div id="sidebar" style="display: none;">
+
+      <!-- 14. ส่วนหัวของ Layer Parnel (start) -->
+      <!-- ตัวอย่างการกำหนดคุณสมบัติใน style="align-items: center;background-color: pink;" ที่กล่าวถึงในข้นตอนที่ 4. -->
+      <div class="row" style="align-items: center;background-color: pink;">
+        <!-- 15. ข้อความ (start) -->
+        <div class="col" style="text-align: center;color: black;font-weight: bold;font-size: 35;">
+          Geographic Infomation System
+        </div>
+        <!-- 15. ข้อความ (end) -->
+        <!-- 16. ปุ่มปิด Layer Parnel (start) -->
+        <div class="col-2">
+          <button type="button" class="btn pull-right" id="sidebar-hide-btn">
+            <i class="fa fa-chevron-left" title="Click to hide sidebar" style="font-size:10px"></i>
+          </button>
+        </div>
+        <!-- 16. ปุ่มปิด Layer Parnel (end) -->
+      </div>
+      <!-- 14. ส่วนหัวของ Layer Parnel (end) -->
+
+      <!-- กลุ่มข้อมูลที่ 1 (start) -->
+      <!-- 18. ชื่อกลุ่มข้อมูล เป็นปุ่มกด ย่อ ขยายกลุ่มข้อมูลได้ (start) -->
+      <div class="row">
+        <div class="col">
+          <!-- ปุ่มกด ที่แสดงชื่อกลุ่ม "กลุ่มข้อมูล 1 เรียกจาก API" เมื่อกด (onclick) แล้วให้ทำคำสั่ง collep ซึ่งเป็นคำสั่งให้แสดงหรือปิดการแสดง tag อื่นๆ กรณีนี้ให้แสดงหรือปิดการแสดง tag ที่กำหนด id เป็น group_1 -->
+          <!-- ชี้ไปให้ถูก id ว่าต้องการให้ควบคุมชั้นข้อมูลในกลุ่มไหน ใน collep('...') -->
+          <button type="button" class="collapsible" onclick="collep('group_1')" style="font-size: 16px;">กลุ่มข้อมูล 1
+            เรียกจาก API</button>
+        </div>
+      </div>
+      <!-- 18. ชื่อกลุ่มข้อมูล เป็นปุ่มกด ย่อ ขยายกลุ่มข้อมูลได้ (end) -->
+
+      <!-- 20. ส่วนเก็บชั้นข้อมูลในกลุ่มข้อมูล ที่กำหนด id เป็น group_1 (start) -->
+      <!-- กำหนด id ให้ตรงกับปุ่มย่อขยายข้อมูลในกลุ่ม ด้านบน ใน id="..." -->
+      <div class="row" id="group_1" style="display:none;">
+
+        <!-- ชั้นข้อมูลที่ 1 (start) -->
+        <!-- 21. ส่วนแสดง check box และชื่อชั้นข้อมูล (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <!-- 22. checkbox ที่กำหนด id เป็น open_layer_api_all สำหรับเปิด-ปิดชั้นข้อมูล โดยเมื่อกด (onclick) ให้ทำคำสั่ง open_layer_api_all() (start) -->
+            <div class="col-2">
+              <!-- กำหนด id ของ checkbox เพื่อใช้ในการเรียกตรวจสอบสถานะในข้อ 27 -->
+              <!-- กำหนดชื่อคำสั่บที่ต้องการให้ทำ เพื่อกดใน onclick"..." -->
+              <input id="open_layer_api_all" type="checkbox" onclick="open_layer_api_all()" style="margin-left: 15px;">
+            </div>
+            <!-- 22. checkbox ที่กำหนด id เป็น open_layer_api_all สำหรับเปิด-ปิดชั้นข้อมูล โดยเมื่อกด (onclick) ให้ทำคำสั่ง open_layer_api_all() (end) -->
+
+            <!-- ชื่อชั้นข้อมูล เป็นปุ่มกด ย่อ ขยายสัญลักษณ์ได้ -->
+            <div class="col">
+              <!-- ชี้ไปให้ถูก id ว่าต้องการให้ควบคุมชั้นข้อมูลในกลุ่มไหน ใน collep('...') -->
+              <button type="button" class="collapsible" onclick="collep('leg_open_layer_api_all')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบไม่ส่งตัวแปร)</button>
+            </div>
+          </div>
+        </div>
+        <!-- 21. ส่วนแสดง check box และชื่อชั้นข้อมูล (end) -->
+
+        <!-- สัญลักษณ์ข้อมูล -->
+        <!-- กำหนด id ให้ตรงกับปุ่มย่อขยายข้อมูลในกลุ่ม ด้านบน และใช้สำหรับระบุเป้าหมายในการนำ html ที่ได้จากการอ่าน sld มาใส่ไว้ ใน id="..." -->
+        <div class="collapsible" id="leg_open_layer_api_all" style="margin-left: 100px;display: none;">
+          <!-- ตัวอย่างการเขียน legend เอง หากอ่านจาก sld ไม่ต้องเขียนส่วนนี้-->
+          <!-- (start) -->
+          <div class="row">
+            <!-- สีของข้อมูล -->
+            <div class="col-2">
+              <div class="col" style="width:15px;height: 15px;background-color:#FF00FB;">
+              </div>
+            </div>
+            <!-- ชื่อข้อมูล -->
+            <div class="col-10" style="font-size: 10px; width: max-content;">กรุงเทพฯ</div>
+          </div>
+          <div class="row">
+            <div class="col-2">
+              <div class="col" style="width:15px;height: 15px;background-color:#00ff15;">
+              </div>
+            </div>
+            <div class="col-10" style="font-size: 10px; width: max-content;">สมุทรปราการ</div>
+          </div>
+          <!-- (end) -->
+        </div>
+        <!-- ชั้นข้อมูลที่ 1 (end) -->
+
+        <!-- ตัวเลือกจังหวัด -->
+        <div class="col" style="text-align: center;">
+          <!-- กำหนด id เพื่อระบุเมื่อต้องการอ่านค่า -->
+          <select id="select_p_name_t_api">
+            <!-- สามารถใส่ตัวเลือกจากการเรียกผ่าน api หรือเขียนตัวเลือกได้เอง -->
+            <option value="">-- เลือกจังหวัด --</option>
+            <!-- กำหนดค่าที่ต้องการใส่ไว้ใน value="..." และส่วนที่ต้องการแสดงผลใน dropdown ใน >...< -->
+            <!-- <option value="1">ตัวเลือกที่ 1</option> -->
+            <!-- <option value="2">ตัวเลือกที่ 2</option> -->
+            <!-- <option value="3">ตัวเลือกที่ 3</option> -->
+          </select>
+        </div>
+
+        <!-- ชั้นข้อมูลที่ 2 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_layer_api_var" type="checkbox" onclick="open_layer_api_var()" style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_open_layer_api_var')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_open_layer_api_var" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 2 (end) -->
+
+        <!-- ชั้นข้อมูลที่ 3 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_layer_api_var_spa" type="checkbox" onclick="open_layer_api_var_spa()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_open_layer_api_var_spa')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร รูปเปลี่ยมปิด intersects)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_open_layer_api_var_spa" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 3 (end) -->
+
+        <!-- ชั้นข้อมูลที่ 4 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_layer_api_var_spa_clip" type="checkbox" onclick="open_layer_api_var_spa_clip()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_open_layer_api_var_spa_clip')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร รูปเปลี่ยมปิด clip)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_open_layer_api_var_spa_clip" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 4 (end) -->
+      </div>
+      <!-- 20. ส่วนเก็บชั้นข้อมูลในกลุ่มข้อมูล ที่กำหนด id เป็น group_1 (end) -->
+      <!-- กลุ่มข้อมูลที่ 1 (end) -->
+
+      <!-- กลุ่มข้อมูลที่ 2 (start) -->
+      <div class="row">
+        <div class="col">
+          <button type="button" class="collapsible" onclick="collep('group_2')" style="font-size: 16px;">กลุ่มข้อมูล 2
+            เรียกจาก Geojson file</button>
+        </div>
+      </div>
+
+      <div class="row" id="group_2" style="display:none;">
+        <!-- ชั้นข้อมูลที่ 1 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_json_layer_all" type="checkbox" onclick="open_json_layer_all()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_json_all')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบไม่ส่งตัวแปร)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_json_all" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 1 (end) -->
+
+        <div class="col" style="text-align: center;">
+          <select id="select_p_name_t_geojson">
+            <option value="">-- เลือกจังหวัด --</option>
+          </select>
+        </div>
+
+        <!-- ชั้นข้อมูลที่ 2 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_json_layer_var" type="checkbox" onclick="open_json_layer_var()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_json_var')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_json_var" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 2 (end) -->
+
+        <!-- ชั้นข้อมูลที่ 3 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_json_layer_var_spa" type="checkbox" onclick="open_json_layer_var_spa()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_json_var_spa')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร รูปเปลี่ยมปิด intersects)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_json_var_spa" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 3 (end) -->
+
+        <!-- ชั้นข้อมูลที่ 4 (start) -->
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_json_layer_var_spa_clip" type="checkbox" onclick="open_json_layer_var_spa_clip()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_json_var_spa_clip')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร รูปเปลี่ยมปิด clip)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_json_var_spa_clip" style="margin-left: 100px;display: none;">
+        </div>
+        <!-- ชั้นข้อมูลที่ 4 (end) -->
+
+      </div>
+      <!-- กลุ่มข้อมูลที่ 2 (end) -->
+
+      <!-- กลุ่มข้อมูลที่ 3 (start) -->
+      <div class="row">
+        <div class="col">
+          <button type="button" class="collapsible" onclick="collep('group_3')" style="font-size: 16px;">กลุ่มข้อมูล 3
+            เรียกจาก WMS</button>
+        </div>
+      </div>
+
+      <div class="row" id="group_3" style="display:none;">
+
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_wms_layer_pro" type="checkbox" onclick="open_wms_layer_pro()" style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_wms_pro')"
+                style="height: 100%;width: 100%;">จังหวัด (สร้างคำอธิบายสัญลักษณ์จากการอ่าน SLD file)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_wms_pro" style="margin-left: 100px;display: none;">
+        </div>
+
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_wms_layer_amp" type="checkbox" onclick="open_wms_layer_amp()" style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_wms_amp')"
+                style="height: 100%;width: 100%;">อำเภอ</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_wms_amp" style="margin-left: 100px;display: none;">
+        </div>
+
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_wms_layer_tam" type="checkbox" onclick="open_wms_layer_tam()" style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_wms_tam')"
+                style="height: 100%;width: 100%;">ตำบล</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_wms_tam" style="margin-left: 100px;display: none;">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <button type="button" class="collapsible" onclick="collep('group_4')" style="font-size: 16px;">กลุ่มข้อมูล 4
+            ส่งข้อมูลไปหน้าอื่น</button>
+        </div>
+      </div>
+
+      <div class="row" id="group_4" style="display:none;">
+
+        <div class="col" style="text-align: center;">
+          <select id="select_p_name_t_send">
+            <option value="">-- เลือกจังหวัด --</option>
+          </select>
+        </div>
+
+        <div class="col" style="margin-left: 10px;">
+          <div class="row">
+            <div class="col-2">
+              <input id="open_layer_api_send" type="checkbox" onclick="open_layer_api_send()"
+                style="margin-left: 15px;">
+            </div>
+            <div class="col">
+              <button type="button" class="collapsible" onclick="collep('leg_open_layer_api_send')"
+                style="height: 100%;width: 100%;">จังหวัด (แบบส่งตัวแปร)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="collapsible" id="leg_open_layer_api_send" style="margin-left: 100px;display: none;">
+        </div>
+
+        <!-- ส่งรหัสจังหวัด แบบที่ 1 -->
+        <!-- <form target="_blank" method="post" action="/secondpage">
+          <div class="col" style="text-align: center;">
+            <input id="p_code_send" type="hidden" value="" name="p_code">
+            <button type="submit" style="font-size: 16px;background-color: green;width: 50%;">ส่งรหัสจังหวัด</button>
+          </div>
+        </form> -->
+
+        <!-- ส่งรหัสจังหวัด แบบที่ 2 -->
+        <div class="col" style="text-align: center;">
+          <button type="button" onclick="send_p_code()"
+            style="font-size: 16px;background-color: green;width: 50%;">ส่งรหัสจังหวัด</button>
+        </div>
+
+        <!-- ส่งรูปร่าง แบบที่ 1 -->
+        <!-- <form target="_blank" method="post" action="/secondpage">
+          <div class="col" style="text-align: center;">
+            <input id="polygon" type="hidden" value="" name="polygon">
+            <button type="submit" style="font-size: 16px;background-color: green;width: 50%;">ส่งรูปร่าง</button>
+          </div>
+        </form> -->
+
+        <!-- ส่งรูปร่าง แบบที่ 2 -->
+        <div class="col" style="text-align: center;">
+          <button type="button" onclick="send_polygon()"
+            style="font-size: 16px;background-color: green;width: 50%;">ส่งรูปร่าง</button>
+        </div>
+
+      </div>
+
+    </div>
+    <!-- 7. Layer Parnel ด้านซ้าย (end) -->
+
+    <!-- 8. ปุ่มเปิด Layer Parnel (start)-->
+    <div class="mini-submenu" title="Expand the sidebar">
+      <a class="fa fa-angle-double-right fa-2x" href="#"></a>
+    </div>
+    <!-- 8. ปุ่มเปิด Layer Parnel (end)-->
+
+    <!-- 10. แผนที่ (start) -->
+    <div id="map"></div>
+    <!-- 10. แผนที่ (end) -->
+
+  </div>
+  <!-- 5. ส่วน container สำหรับช่วยจัดให้ content เต็มหน้าจอพอดี (end) -->
+
+  <!-- 6. ดึงคำสั่งจากไฟล์ที่เขียน javascript (start) -->
+  <script src="/views/mainindexparcel.js"></script>
+  <!-- 6. ดึงคำสั่งจากไฟล์ที่เขียน javascript (end) -->
+</body>
+
+</html>
