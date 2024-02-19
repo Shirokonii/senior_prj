@@ -60,7 +60,7 @@
     <div class="content">
       <div class="content_left">
         <h1>Nakhon Nayok Trip Design</h1>
-        <p>เว็บไซต์ออกแบบทริปการท่องเที่ยวในจังหวัดนครนายก</p>
+        <p> เว็บไซต์ออกแบบทริปการท่องเที่ยวในจังหวัดนครนายก</p>
       </div>
       <div class="content_right" style="text-align: center" id="map">
         <iframe width="1200" height="900" style="border:0;" allowfullscreen="" loading="lazy"
@@ -144,12 +144,12 @@
     <button class="collapsible" style=' cursor: pointer; font-weight: bold; text-decoration: underline;'>ที่พัก</button>
     <div class="content" style="display: none">
       <p>This is the content that can be collapsed or expanded.</p>
-      <label for="selectprice_ht">ราคา (ต่อคืน):</label>
+      <label for="selectprice_ht">ลักษณะที่พัก:</label>
       <select id="selectprice_ht" name="selectprice_ht" onchange="priceht()">
         <option value="price_hotel0">-</option>
-        <option value="price_hotel1">XXX บาท</option>
-        <option value="price_hotel2">XXXX บาท</option>
-        <option value="price_hotel3">XXXXX บาท</option>
+        <option value="price_hotel1">เน้นความสวย/บรรยากาศ</option>
+        <option value="price_hotel2">สิ่งอำนวยความสะดวกหลากหลาย</option>
+        <option value="price_hotel3">ความสะอาด</option>
       </select>
       <br><label for="selectstar">ประเภท:</label>
       <select id="selectstar" name="selectstar" onchange='typeht()'>
@@ -171,12 +171,12 @@
     underline;'>ร้านอาหาร</button>
     <div class="content" style="display: none">
       <p>This is the content that can be collapsed or expanded.</p>
-      <label for="selectprice_f">ราคา:</label>
+      <label for="selectprice_f">ลักษณะร้านอาหาร</label>
       <select id="selectprice_f" name="selectprice_f" onchange="pricefood()">
         <option value="price_food0">-</option>
-        <option value="price_food1">XXX บาท</option>
-        <option value="price_food2">XXXX บาท</option>
-        <option value="price_food3">XXXXX บาท</option>
+        <option value="price_food1">เน้นความหลากหลาย</option>
+        <option value="price_food2">เน้นบรรยากาศ</option>
+        <option value="price_food3">สร้างประสบการณ์ใหม่</option>
       </select>
       <br><label for="selectfood">ประเภทร้านอาหาร:</label>
       <select id="selectfood" name="selectfood" onchange='food()'>
@@ -189,6 +189,9 @@
       <br><button class="button" style="margin-top: 1em;" id="apply_res" onclick='apply_food()'>Apply</button>
     </div>
   </div>
+</section>
+<section style="margin-top: 3em;">
+  
 </section>
 
 <footer>
